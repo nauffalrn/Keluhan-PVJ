@@ -1,75 +1,166 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <title>Form Keluhan Toilet</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link 
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" 
-    rel="stylesheet"
-  >
-</head>
-<body class="bg-light">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Form Keluhan Toilet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-light">
+    <div class="container mt-4">
+      <div class="card shadow">
+        <div class="card-body">
+          <!-- Form Section -->
+          <div id="formSection">
+            <h5 class="mb-3">Form Keluhan Toilet</h5>
 
-<div class="container mt-4">
-  <div class="card shadow">
-    <div class="card-body">
-      <h5 class="mb-3">Form Keluhan Toilet</h5>
+            <div class="mb-3">
+              <label class="form-label">Lokasi Toilet</label>
+              <input type="text" id="toilet" class="form-control" readonly />
+            </div>
 
-      <div class="mb-3">
-        <label class="form-label">Lokasi Toilet</label>
-        <input type="text" id="toilet" class="form-control" readonly>
+            <div class="mb-3">
+              <label class="form-label">Kategori</label>
+              <select id="kategori" class="form-select">
+                <option value="">-- Pilih Kategori --</option>
+                <option value="kebersihan">Kebersihan</option>
+                <option value="infrastruktur">Infrastruktur</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Keluhan</label>
+              <textarea id="keluhan" class="form-control" rows="4"></textarea>
+            </div>
+
+            <button
+              class="btn btn-primary w-100"
+              onclick="submitKeluhan()"
+              id="btnSubmit"
+            >
+              <span id="btnText">Kirim Keluhan</span>
+              <span id="btnLoading" style="display: none">
+                <span
+                  class="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Mengirim...
+              </span>
+            </button>
+          </div>
+
+          <!-- Success Section (Hidden by default) -->
+          <div
+            id="successSection"
+            style="display: none"
+            class="text-center py-4"
+          >
+            <div class="mb-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="80"
+                height="80"
+                fill="currentColor"
+                class="text-success"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"
+                />
+              </svg>
+            </div>
+            <h4 class="text-success mb-3">Terima Kasih!</h4>
+            <p class="mb-2">Keluhan Anda telah berhasil dikirim</p>
+            <p class="text-muted small mb-4">
+              Saran Anda sangat membantu kami untuk meningkatkan kualitas
+              layanan toilet di mall ini
+            </p>
+            <button class="btn btn-primary" onclick="resetForm()">
+              Kirim Keluhan Lainnya
+            </button>
+          </div>
+        </div>
       </div>
-
-      <div class="mb-3">
-        <label class="form-label">Kategori</label>
-        <select id="kategori" class="form-select">
-          <option value="">-- Pilih Kategori --</option>
-          <option value="kebersihan">Kebersihan</option>
-          <option value="infrastruktur">Infrastruktur</option>
-        </select>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Keluhan</label>
-        <textarea id="keluhan" class="form-control" rows="4"></textarea>
-      </div>
-
-      <button class="btn btn-primary w-100" onclick="submitKeluhan()">
-        Kirim Keluhan
-      </button>
     </div>
-  </div>
-</div>
 
-<script>
-  const params = new URLSearchParams(window.location.search);
-  const toilet = params.get('toilet');
-  document.getElementById('toilet').value = toilet || 'Tidak diketahui';
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const toilet = params.get("toilet");
+      document.getElementById("toilet").value = toilet || "Tidak diketahui";
 
-  async function submitKeluhan() {
-    const kategori = document.getElementById('kategori').value;
-    const keluhan = document.getElementById('keluhan').value;
+      async function submitKeluhan() {
+        const kategori = document.getElementById("kategori").value;
+        const keluhan = document.getElementById("keluhan").value;
 
-    if (!kategori || !keluhan) {
-      alert('Lengkapi semua field!');
-      return;
-    }
+        if (!kategori || !keluhan) {
+          alert("Lengkapi semua field!");
+          return;
+        }
 
-    const res = await fetch('http://localhost:3000/api/keluhan', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        toilet,
-        kategori,
-        keluhan
-      })
-    });
+        // Show loading state
+        const btnSubmit = document.getElementById("btnSubmit");
+        const btnText = document.getElementById("btnText");
+        const btnLoading = document.getElementById("btnLoading");
 
-    const data = await res.json();
-    alert(data.message);
-  }
-</script>
+        btnSubmit.disabled = true;
+        btnText.style.display = "none";
+        btnLoading.style.display = "inline";
 
-</body>
+        try {
+          const res = await fetch("http://localhost:3000/api/keluhan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              toilet,
+              kategori,
+              keluhan,
+            }),
+          });
+
+          const data = await res.json();
+
+          if (res.ok) {
+            // Show success section
+            document.getElementById("formSection").style.display = "none";
+            document.getElementById("successSection").style.display = "block";
+          } else {
+            alert("❌ " + data.message);
+            // Reset button state
+            btnSubmit.disabled = false;
+            btnText.style.display = "inline";
+            btnLoading.style.display = "none";
+          }
+        } catch (err) {
+          alert("❌ Gagal mengirim keluhan. Pastikan backend berjalan.");
+          // Reset button state
+          btnSubmit.disabled = false;
+          btnText.style.display = "inline";
+          btnLoading.style.display = "none";
+        }
+      }
+
+      function resetForm() {
+        // Reset form
+        document.getElementById("kategori").value = "";
+        document.getElementById("keluhan").value = "";
+
+        // Reset button state
+        const btnSubmit = document.getElementById("btnSubmit");
+        const btnText = document.getElementById("btnText");
+        const btnLoading = document.getElementById("btnLoading");
+
+        btnSubmit.disabled = false;
+        btnText.style.display = "inline";
+        btnLoading.style.display = "none";
+
+        // Show form section
+        document.getElementById("formSection").style.display = "block";
+        document.getElementById("successSection").style.display = "none";
+      }
+    </script>
+  </body>
 </html>
